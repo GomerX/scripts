@@ -1,0 +1,20 @@
+#/bin/bash
+# acl_fix	Jeff Ratliff	03/02/2012	
+# This will recursively set acls on directories to rwx for the specified group.
+# Also sets default acl on the dirctory so any file or directory created in
+# this directory has correct permissons.  The last if statement sets file acls
+# rather than directory acls.
+#
+# Usage: ./acl_fix <directory> <group>
+
+for i in `find ./$1`
+        do if [ -d $i ]; 
+		then setfacl -m group:$2:rwx $i;
+		setfacl -m default:group:$2:rwx $i;
+        fi; 
+	
+	if [ -f $i ];
+		then setfacl -m group:$2:rw $i;
+	fi;
+done
+

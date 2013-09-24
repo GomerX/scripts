@@ -1,0 +1,16 @@
+#/bin/bash
+# web_fix	Jeff Ratliff	02/08/2012	
+# This will recursively set permissions on directories only to 2775
+# This sets the set GID bit so that any file created in these directories
+# is editable by anyone in the group. Files will still be created
+# with rw-r--r-- permissions, but since they have write permissions on the
+# directory they can still overwrite any file.
+#
+# Usage: ./web_fix <directory>
+
+for i in `find ./$1`
+        do if [ -d $i ]; 
+                then chmod 2775 $i; 
+        fi; 
+done
+
