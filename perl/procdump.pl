@@ -15,27 +15,27 @@
 # Can be executed on it's own, or procdump.pl <procedure name> will dump a
 # specific proc.
 #
-# Works OK o MySQL 5.0 and 5.1. That's all I've tested.
+# Works OK on MySQL 5.0 and 5.1. That's all I've tested.
 
 use strict;
 use DBI;    			# for the database stuff
 
 # Fill in the stuff in <> with real values
-my $host = '<hostname>';
-my $user = '<username>';
-my $pass = '<password>';
-my $db = <'database name'>;
+my $host = 	'<hostname>';
+my $user = 	'<username>';
+my $pass = 	'<password>';
+my $schema = 	'<database_name>';	# this is the database whose procedures you want to dump
+my $DB =    	'mysql';		# doesn't change because all procs are in the mysql db
 my $sqlstatement;
 my $dbh; # database handle
 my $sth; # statement handle
 my (@row);
 
 
-my $DB =    'mysql';
 
 &db_open($DB);
 
-$sqlstatement="select name, param_list, body from proc where db = \'$db\'";
+$sqlstatement="select name, type, param_list, returns, body, comment, is_deterministic from proc where db = \'$schema\'";
 # Handle command line parameter
 if ($ARGV[0]) {
 	$sqlstatement .= " and name = \'$ARGV[0]\'";
@@ -46,12 +46,22 @@ if ($ARGV[0]) {
 # header
 print "DELIMITER ;;\n\n";
 
-# print procs
+# print procs and functions
 while (@row = $sth->fetchrow_array) {
-	print "DROP PROCEDURE IF EXISTS `", $row[0], "`;;\n";
-	print "CREATE PROCEDURE `", $row[0], "`(\n";
-	print $row[1], "\n)\n";
-	print $row[2], ";;\n\n";
+	print "DROP ", $row[1], " IF EXISTS `", $row[0], "`;;\n";
+	print "CREATE ", $row[1], " `", $row[0], "`(";
+	print $row[2], ")";
+	if ($row[5]) {
+		print " COMMENT '", $row[5], "'";
+	}
+	if ($row[3]) {
+		print " RETURNS ", $row[3];
+	}
+	if ($row[6] eq 'YES') {
+		print " DETERMINISTIC ";
+	}
+	print  "\n";
+	print $row[4], ";;\n\n";
 }
 $sth->finish;
 
