@@ -21,9 +21,6 @@ use strict;
 use DBI;    			# for the database stuff
 
 # Fill in the stuff in <> with real values
-my $host = 	'<hostname>';
-my $user = 	'<username>';
-my $pass = 	'<password>';
 my $schema = 	'<database_name>';	# this is the database whose procedures you want to dump
 my $DB =    	'mysql';		# doesn't change because all procs are in the mysql db
 my $sqlstatement;
@@ -33,7 +30,7 @@ my (@row);
 
 
 
-&db_open($DB);
+$dbh = &db_open($DB);
 
 $sqlstatement="select name, type, param_list, returns, body, comment, is_deterministic from proc where db = \'$schema\'";
 # Handle command line parameter
@@ -41,7 +38,7 @@ if ($ARGV[0]) {
 	$sqlstatement .= " and name = \'$ARGV[0]\'";
 }
 
-&db_query($sqlstatement);
+$sth = &db_query($sqlstatement, $dbh);
 
 # header
 print "DELIMITER ;;\n\n";
@@ -65,7 +62,7 @@ while (@row = $sth->fetchrow_array) {
 }
 $sth->finish;
 
-&db_close;
+&db_close($dbh);
 
 
 
@@ -73,25 +70,32 @@ $sth->finish;
 ##  Subroutines  ##
 ###################
 
-sub db_open ($db_name) {
-# Open connection to the database. This relies on global variables,
-# which is a bad idea. I should remember how to pass by refernce in Perl and
-# fix this.
+sub db_open ($) {
+# Open connection to the database.
 	my $db_name = @_[0];
+	my $handle;
+	# Fill in the stuff in <> with real values
+	my $host = 	'<hostname>';
+	my $user = 	'<username>';
+	my $pass = 	'<password>';
 
 	#$dbh=DBI->connect('dbi:mysql:<database>;<host.domain>','user','password');
-	$dbh = DBI->connect("dbi:mysql:$db_name;$host","$user","$pass");
+	$handle = DBI->connect("dbi:mysql:$db_name;$host","$user","$pass");
+	return $handle
 }
 
-sub db_query($query) {
+sub db_query($$) {
 	my $query = @_[0];
+	my $handle = @_[1];
 	# prepare SQL statement
-	$sth = $dbh->prepare($query);
+	my $statement = $handle->prepare($query);
 
 	# execute statement
-	$sth->execute || die "Could not execute SQL statement: $!";
+	$statement->execute || die "Could not execute SQL statement: $!";
+	return $statement;
 }
 
-sub db_close() {
-	$dbh->disconnect;
+sub db_close($) {
+	my $handle = @_[0];
+	$handle->disconnect;
 }
