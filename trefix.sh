@@ -4,7 +4,7 @@
 # Now I don't need to remember.
 # Usage: ./trefix.sh <directory>
 
-for i in `find $1`;
+for i in `find .`;
   do
     if [ -d $i ] ;
       then
