@@ -41,7 +41,7 @@ while True: # infinite loop
     current = biggest()
     print ("largest directory is " + current[1] + " at " + str(current[0]) + "k bytes")
 
-    # stop condition. If the biggest directory is less than half the size of the last on we checked, we are done
+    # stop condition. If the biggest directory is less than half the size of the last one we checked, we are done
     if (current[0] < prev[0]/2):
         print ("stopping recursion here")
         break
