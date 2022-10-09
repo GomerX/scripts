@@ -2,6 +2,8 @@
 # a script to find the biggest directory recursively to identify heavy disk space usage
 #
 
+# import libraries. subprocess handles calls to external programs, like BASH builtins
+# re does regular expressions.
 import os
 import subprocess
 import re
